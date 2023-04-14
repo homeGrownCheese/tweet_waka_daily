@@ -27,8 +27,7 @@ def get_wakatime_stats():
         )
 
     stats = {}
-    stats["minutes_coded_today"] = response.json()[
-        "data"]["grand_total"]["text"]
+    stats["minutes_coded_today"] = response.json()["data"]["grand_total"]["text"]
     return stats
 
 
@@ -49,7 +48,7 @@ def update_coding_streak():
 
 
 def format_tweet(coding_streak, minutes_coded_today):
-    day_of_streak = coding_streak + 1
+    day_of_streak = coding_streak
     tweet_text = f"Day {day_of_streak} of my coding streak: I coded {minutes_coded_today} minutes today!\n\n#100DaysOfCode #100DaysOfDjango #python #django"
     return tweet_text
 
@@ -58,8 +57,7 @@ def post_tweet(tweet_text):
     url = "https://api.twitter.com/2/tweets"
     headers = {"Content-Type": "application/json"}
     data = {"text": tweet_text}
-    response = requests.post(
-        url, auth=auth, data=json.dumps(data), headers=headers)
+    response = requests.post(url, auth=auth, data=json.dumps(data), headers=headers)
 
     if response.status_code != 201:
         raise Exception(
