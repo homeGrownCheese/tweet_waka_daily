@@ -19,7 +19,7 @@ TWITTER_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
 TWITTER_ACCESS_TOKEN_SECRET=YOUR_ACCESS_TOKEN_SECRET
 WAKATIME_API_KEY=YOUR_WAKATIME_API_KEY
 ```
-5.  Create a `coding_stats.txt` file in the root directory.  This file will be used to store the current day count you are on.  The first time you run the script, this file should contain the number 1.  The next time you run the script, it should contain the number 2, and so on.  This process should be replaced with a database or redis in the future, but for now, this is a quick and dirty solution and easy to do for a local server.
+5.  Set the `coding_stats.txt` file in the root directory to your current streak.  This file will be used to store the current day count you are on.  The first time you run the script, if this is the beginning of your streak this file should contain the number 1.  The next time you run the script, it should contain the number 2, and so on.  This process should be replaced with a database or redis in the future, but for now, this is a quick and dirty solution and easy to do for a local server.
 
 6. Create a cron job to run the script every day at 12:00 AM or whatever time you want.  For example, to run the script every day at 12:00 AM, add the following to your crontab:
 ```
