@@ -28,6 +28,9 @@ def get_wakatime_stats():
 
     stats = {}
     stats["minutes_coded_today"] = response.json()["data"]["grand_total"]["text"]
+    stats["total_seconds_coded_today"] = response.json()["data"]["grand_total"][
+        "total_seconds"
+    ]
     return stats
 
 
@@ -36,7 +39,7 @@ def update_coding_streak():
         coding_streak = int(f.read().strip())
 
     stats = get_wakatime_stats()
-    if stats["minutes_coded_today"]:
+    if stats["total_seconds_coded_today"] > 0:
         coding_streak += 1
     else:
         coding_streak = 0
