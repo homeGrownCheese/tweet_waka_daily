@@ -47,6 +47,11 @@ def update_coding_streak():
     with open("coding_streak.txt", "w") as f:
         f.write(str(coding_streak))
 
+    # If the streak is 0, we don't want to tweet about it so we will end the program
+    if coding_streak == 0:
+        print("No coding today, so no tweet!")
+        exit()
+
     return coding_streak
 
 
