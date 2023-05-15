@@ -4,6 +4,7 @@ import json
 from requests_oauthlib import OAuth1
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 CONSUMER_KEY = os.getenv("TWITTER_API_KEY")
@@ -27,19 +28,20 @@ def get_wakatime_stats():
         )
 
     stats = {}
+    top_3_languages = {}
     stats["minutes_coded_today"] = response.json()["data"]["grand_total"]["text"]
-    stats["total_seconds_coded_today"] = response.json()["data"]["grand_total"][
-        "total_seconds"
-    ]
-    return stats
+
+    for language in response.json()["data"]["languages"][0:3]:
+        top_3_languages[language["name"]] = language["text"]
+    return stats, top_3_languages
 
 
 def update_coding_streak():
     with open("coding_streak.txt", "r") as f:
         coding_streak = int(f.read().strip())
 
-    stats = get_wakatime_stats()
-    if stats["total_seconds_coded_today"] > 0:
+    stats, top_3_languages = get_wakatime_stats()
+    if stats["minutes_coded_today"]:
         coding_streak += 1
     else:
         coding_streak = 0
@@ -47,17 +49,21 @@ def update_coding_streak():
     with open("coding_streak.txt", "w") as f:
         f.write(str(coding_streak))
 
-    # If the streak is 0, we don't want to tweet about it so we will end the program
+    # If the coding streak is broken, do not tweet and end the program.  The streak file will be updated to 0.
     if coding_streak == 0:
-        print("No coding today, so no tweet!")
+        print("Coding streak broken, not tweeting")
         exit()
 
     return coding_streak
 
 
-def format_tweet(coding_streak, minutes_coded_today):
+def format_tweet(coding_streak, minutes_coded_today, languages):
     day_of_streak = coding_streak
-    tweet_text = f"Day {day_of_streak} of my coding streak: I coded {minutes_coded_today} minutes today!\n\n#100DaysOfCode #100DaysOfDjango #python #django"
+    tweet_text = f"Day {day_of_streak} of my coding streak: I coded {minutes_coded_today} today!\n\n#100DaysOfCode "
+    # make the hashtags each language
+    for language in languages.keys():
+        tweet_text += f"#{language} "
+
     return tweet_text
 
 
@@ -77,6 +83,6 @@ def post_tweet(tweet_text):
 
 if __name__ == "__main__":
     coding_streak = update_coding_streak()
-    stats = get_wakatime_stats()
-    tweet_text = format_tweet(coding_streak, stats["minutes_coded_today"])
+    stats, languages = get_wakatime_stats()
+    tweet_text = format_tweet(coding_streak, stats["minutes_coded_today"], languages)
     post_tweet(tweet_text)
