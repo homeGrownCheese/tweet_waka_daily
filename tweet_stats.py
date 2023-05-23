@@ -3,6 +3,7 @@ import requests
 import json
 from requests_oauthlib import OAuth1
 from dotenv import load_dotenv
+import redis
 
 
 load_dotenv()
@@ -12,6 +13,8 @@ CONSUMER_SECRET = os.getenv("TWITTER_API_SECRET")
 ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 API_KEY = os.getenv("WAKATIME_API_KEY")
+
+r = redis.Redis(host="localhost", port=6379, db=0)
 
 
 auth = OAuth1(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -36,23 +39,38 @@ def get_wakatime_stats():
     return stats, top_3_languages
 
 
+# def update_coding_streak():
+#     with open("coding_streak.txt", "r") as f:
+#         coding_streak = int(f.read().strip())
+
+#     stats, top_3_languages = get_wakatime_stats()
+#     if stats["minutes_coded_today"]:
+#         coding_streak += 1
+#     else:
+#         coding_streak = 0
+
+#     with open("coding_streak.txt", "w") as f:
+#         f.write(str(coding_streak))
+
+#     # If the coding streak is broken, do not tweet and end the program.  The streak file will be updated to 0.
+#     if coding_streak == 0:
+#         print("Coding streak broken, not tweeting")
+#         exit()
+
+#     return coding_streak
+
+
 def update_coding_streak():
-    with open("coding_streak.txt", "r") as f:
-        coding_streak = int(f.read().strip())
-
-    stats, top_3_languages = get_wakatime_stats()
-    if stats["minutes_coded_today"]:
-        coding_streak += 1
+    # get the current streak from redis
+    coding_streak = r.get("coding_streak")
+    # if there is no streak, set it to 1 and save it to redis
+    if not coding_streak:
+        coding_streak = 1
+        r.set("coding_streak", coding_streak)
+    # if there is a streak, increment it and save it to redis
     else:
-        coding_streak = 0
-
-    with open("coding_streak.txt", "w") as f:
-        f.write(str(coding_streak))
-
-    # If the coding streak is broken, do not tweet and end the program.  The streak file will be updated to 0.
-    if coding_streak == 0:
-        print("Coding streak broken, not tweeting")
-        exit()
+        coding_streak = int(coding_streak) + 1
+        r.set("coding_streak", coding_streak)
 
     return coding_streak
 
@@ -82,7 +100,11 @@ def post_tweet(tweet_text):
 
 
 if __name__ == "__main__":
-    coding_streak = update_coding_streak()
     stats, languages = get_wakatime_stats()
+    if stats["minutes_coded_today"]:
+        coding_streak = update_coding_streak()
+    else:
+        exit()
+
     tweet_text = format_tweet(coding_streak, stats["minutes_coded_today"], languages)
     post_tweet(tweet_text)
