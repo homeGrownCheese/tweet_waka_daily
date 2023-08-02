@@ -1,3 +1,4 @@
 .env
 .vscode
 coding_streak.txt
+tests/
