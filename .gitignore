@@ -1,3 +1,5 @@
 .env
 .vscode
 coding_streak.txt
+.venv/
+__pycache__/
