@@ -29,9 +29,11 @@ def get_wakatime_stats():
 
     stats = {}
     top_3_languages = {}
-    stats["minutes_coded_today"] = response.json()["data"]["grand_total"]["text"]
+    data = response.json()["data"]
+    stats["minutes_coded_today"] = data["grand_total"]["text"]
+    stats["total_seconds"] = data["grand_total"]["total_seconds"]
 
-    for language in response.json()["data"]["languages"][0:3]:
+    for language in data["languages"][0:3]:
         top_3_languages[language["name"]] = language["text"]
     return stats, top_3_languages
 
@@ -41,7 +43,7 @@ def update_coding_streak():
         coding_streak = int(f.read().strip())
 
     stats, top_3_languages = get_wakatime_stats()
-    if stats["minutes_coded_today"]:
+    if stats["total_seconds"] > 0:
         coding_streak += 1
     else:
         coding_streak = 0
